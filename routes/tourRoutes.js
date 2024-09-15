@@ -4,6 +4,7 @@ const router = express.Router();
 
 // router.param('id',tourController.checkID);
 
+router.route('/top-5-tours').get(tourController.aliasTopTours,tourController.getAllTours);
 
 router.route('/').get(tourController.getAllTours).post(tourController.createTour);
 router.route('/:id').post(tourController.getTour).patch(tourController.updateTour).delete(tourController.deleteTour);
