@@ -13,8 +13,10 @@ app.use(express.json()); // To read the incoming body data
 
 //Routes
 app.use('/api/v1/tours',tourRouter);
-app.use('/api/v1/tours',userRouter);
+app.use('/api/v1/users',userRouter);
 
+
+//Middleware to handle undefined Routes
 app.all('*',(req, res, next)=>{
 
 

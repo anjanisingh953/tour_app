@@ -17,6 +17,16 @@ const handleValidationErroDB =  err =>{
     return new AppError(message, 400);
 }
 
+const handleJwtErrorValidation =  err =>{ 
+    return new AppError("Invalid Jwt Token", 500); 
+}   
+
+const handleJwtTokenExpire =  err =>{ 
+    return new AppError("Jwt Token is Expired", 500); 
+}   
+
+
+
 const sendErrorDev = (err, res)=>{
 
     res.status(err.statusCode).json({
@@ -29,6 +39,7 @@ const sendErrorDev = (err, res)=>{
 
 const sendErrorProd =  (err, res)=>{
 
+    console.log("isOperational >>",err.isOperational)
     if(err.isOperational){
         res.status(err.statusCode).json({
             status: err.status,
@@ -52,6 +63,11 @@ globalErrorHandler = (err, req, res, next)=>{
     err.statusCode = err.statusCode || 500;
     err.status = err.status || 'error';
 
+    // res.status(err.statusCode).json({
+    //     status: err.status,
+    //     message: err.message
+    // });
+
     if(process.env.NODE_ENV === 'development'){
         sendErrorDev(err, res);
     }else if(process.env.NODE_ENV === 'production'){
@@ -60,7 +76,10 @@ globalErrorHandler = (err, req, res, next)=>{
         // console.log(err.name)
         if(err.name === 'CastError') error = handleCastErrorDB(err);
         if(err.code === 11000 ) error = handleDuplicateFieldsErrorDB(err);
-        if(err.name === 'ValidationError') error = handleValidationErroDB(err)
+        if(err.name === 'ValidationError') error = handleValidationErroDB(err);
+        if(err.name === 'JsonWebTokenError') error = handleJwtErrorValidation(err);
+        if(err.name === 'TokenExpiredError') error = handleJwtTokenExpire(err);
+        
         sendErrorProd(error, res);
     }
 
