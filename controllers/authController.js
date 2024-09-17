@@ -18,7 +18,8 @@ exports.signup = catchAsync(async(req, res, next)=>{
         name: req.body.name,
         email: req.body.email,
         password: req.body.password,
-        confirmPassword: req.body.confirmPassword
+        confirmPassword: req.body.confirmPassword,
+        role: req.body.role
     });
     
     const token = signToken(newUser._id);
@@ -109,3 +110,41 @@ exports.protect = catchAsync(async (req, res, next)=>{
 
 
 })      
+
+
+exports.restirctTo = (...roles)=>{
+    return (req, res, next)=>{
+       
+        if(!roles.includes(req.user.role)){
+            return next(new AppError('You do not have permission to perform this action',403));
+        }
+        next();
+    }
+}
+
+exports.forgetPassword = catchAsync(async(req, res, next)=>{ 
+    
+    //Step 1: Get user based on passed email
+    const user = await User.findOne({ email : req.body.email });
+
+    if(!user){
+        return next(new AppError('There is no user exist with provided email address.',404))
+    }
+
+    //Step 2: Generate  the random  reset token not jwt token
+    const resetToken = user.createPasswordResetToken();
+    await user.save({ validateBeforeSave: false });
+    //Step 3: Send it to the user's email
+
+})
+
+
+exports.resetPassword = catchAsync(async(req, res, next)=>{ 
+    
+    //Step 1: Get user based on passed email
+    const user = await User.findOne({ email : req.body.email });
+    //Step 2: Generate  the random  reset token not jwt token
+
+    //Step 3: Send it to the user's email
+
+})
