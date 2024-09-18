@@ -9,6 +9,17 @@ const sendEmail = require('../utils/email')
 const createSendToken = (user, statusCode, res)=>{
    
     const token = signToken(user._id);
+    //we use cookie to secure our app from cross-site-scipting attacks
+    res.cookie('jwt', token, {
+        expiresIn: new Date( Date.now() + process.env.JWT_COOKIES_EXPIRES_IN * 24 * 60 * 60 * 1000) ,
+        // secure: true, // Only allows https protocol
+        httpOnly: true
+
+    });
+
+    // Remove the password from the output
+    user.password = undefined;
+
 
     res.status(statusCode).json({
         status: 'success',
@@ -53,10 +64,9 @@ exports.login = catchAsync(async(req, res, next)=>{
 
     //Step 2: check if user exists and password is correct 
     const user = await User.findOne({email}).select('+password');
-    console.log(user)
+    // console.log(user)
     const correct = await user.correctPassword(password, user.password); 
 
-    console.log('correct answer :',correct)
 
     if(!user || !correct){
         return next(new AppError('Email or password is invalid!', 401));
@@ -69,10 +79,9 @@ exports.login = catchAsync(async(req, res, next)=>{
 
 
 exports.protect = catchAsync(async (req, res, next)=>{
-    // console.log('prorotectd',req.headers);
     
     //Step 1: Check authorization header is passed or not while requesting
-    console.log('req.headers.authorization ',req.headers.authorization)
+      // console.log('req.headers.authorization ',req.headers.authorization)
 
     if(!req.headers.authorization){
         return res.status(400).json({
