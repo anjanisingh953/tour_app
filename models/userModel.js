@@ -58,6 +58,16 @@ const userSchema = new mongoose.Schema({
         next();
     });
 
+
+//doc middleware 
+userSchema.pre('save',function(next){
+    if(!this.isModified('password') || this.isNew) return next();
+
+    this.passwordChangedAt = Date.now() - 1000;
+    next();
+})  
+
+
 // method to compare the password     
 userSchema.methods.correctPassword = async function(candidatePassword, userPassword){
 
@@ -86,7 +96,7 @@ userSchema.methods.createPasswordResetToken = function(){
 
     console.log({resetToken}, this.passwordResetToken);
 
-    this.passwordResetExpires = Date.now() + 10 * 60 * 1000;  //10 minutes
+    this.passwordResetExpires = Date.now() + 10 * 60 * 1000;  //reset token expiration time is 10 minutes after current time
 
     return resetToken;
 };
